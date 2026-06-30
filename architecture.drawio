@@ -1,74 +1,61 @@
 <mxfile host="app.diagrams.net" agent="azure-sre-agent-grafana" version="24.7.17">
-  <diagram id="sre-grafana-private" name="SRE Agent + Grafana (private)">
-    <mxGraphModel dx="1260" dy="680" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1260" pageHeight="680" math="0" shadow="0">
+  <diagram id="sre-grafana-public-entra" name="SRE Agent + Grafana (public + Entra/RBAC)">
+    <mxGraphModel dx="1260" dy="700" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1260" pageHeight="700" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
 
-        <mxCell id="title" value="Azure SRE Agent + Managed Grafana — Private Networking" style="text;html=1;align=center;verticalAlign=middle;fontSize=18;fontStyle=1;fontColor=#ffffff;fillColor=#0078D4;strokeColor=none;" vertex="1" parent="1">
+        <mxCell id="title" value="Azure SRE Agent + Managed Grafana — public endpoint secured by Entra ID + RBAC" style="text;html=1;align=center;verticalAlign=middle;fontSize=17;fontStyle=1;fontColor=#ffffff;fillColor=#0078D4;strokeColor=none;" vertex="1" parent="1">
           <mxGeometry x="0" y="0" width="1260" height="48" as="geometry" />
         </mxCell>
 
+        <mxCell id="entra" value="Microsoft Entra ID&#10;authentication boundary&#10;(no API keys · no anonymous)" style="rounded=1;html=1;whiteSpace=wrap;fillColor=#EAF1FB;strokeColor=#1B72E8;fontColor=#0b3d91;fontSize=12;fontStyle=1;dashed=1;dashPattern=6 4;" vertex="1" parent="1">
+          <mxGeometry x="470" y="540" width="320" height="110" as="geometry" />
+        </mxCell>
+
         <mxCell id="sub" value="Azure Subscription" style="rounded=1;html=1;dashed=1;dashPattern=7 5;strokeColor=#9CC4E4;fillColor=none;verticalAlign=top;align=left;spacingLeft=14;spacingTop=8;fontColor=#5b7795;fontSize=12;fontStyle=1;" vertex="1" parent="1">
-          <mxGeometry x="20" y="64" width="840" height="588" as="geometry" />
+          <mxGeometry x="20" y="64" width="840" height="448" as="geometry" />
         </mxCell>
         <mxCell id="rg" value="Resource Group — rg-&lt;env&gt;-sre" style="rounded=1;html=1;dashed=1;dashPattern=4 4;strokeColor=#0078D4;fillColor=#FAFCFE;verticalAlign=top;align=left;spacingLeft=14;spacingTop=8;fontColor=#0078D4;fontSize=12;fontStyle=1;" vertex="1" parent="1">
-          <mxGeometry x="40" y="100" width="800" height="534" as="geometry" />
+          <mxGeometry x="40" y="100" width="800" height="392" as="geometry" />
         </mxCell>
 
-        <mxCell id="agent" value="Azure SRE Agent&#10;AI incident investigation" style="rounded=1;html=1;whiteSpace=wrap;fillColor=#0078D4;strokeColor=#0078D4;fontColor=#ffffff;fontSize=13;fontStyle=1;" vertex="1" parent="1">
+        <mxCell id="mi" value="Managed Identity&#10;agent workload identity" style="rounded=1;html=1;whiteSpace=wrap;fillColor=#EEEEFB;strokeColor=#6B69D6;fontColor=#3c3a96;fontSize=13;fontStyle=1;" vertex="1" parent="1">
           <mxGeometry x="70" y="150" width="300" height="92" as="geometry" />
         </mxCell>
-        <mxCell id="mi" value="Managed Identity&#10;agent workload identity" style="rounded=1;html=1;whiteSpace=wrap;fillColor=#EEEEFB;strokeColor=#6B69D6;fontColor=#3c3a96;fontSize=13;fontStyle=1;" vertex="1" parent="1">
-          <mxGeometry x="470" y="150" width="300" height="92" as="geometry" />
+        <mxCell id="agent" value="Azure SRE Agent&#10;AI incident investigation&#10;Microsoft-managed (no VNet injection)" style="rounded=1;html=1;whiteSpace=wrap;fillColor=#0078D4;strokeColor=#0078D4;fontColor=#ffffff;fontSize=13;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="70" y="300" width="300" height="120" as="geometry" />
+        </mxCell>
+        <mxCell id="grafana" value="Azure Managed Grafana&#10;public endpoint · Entra ID + RBAC&#10;/api/azure-mcp" style="rounded=1;html=1;whiteSpace=wrap;fillColor=#FFF1E6;strokeColor=#F46800;fontColor=#8a3b00;fontSize=13;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="510" y="300" width="280" height="120" as="geometry" />
         </mxCell>
 
-        <mxCell id="vnet" value="Virtual Network · 10.42.0.0/24" style="rounded=1;html=1;dashed=1;dashPattern=6 4;strokeColor=#127c79;fillColor=#F0FAF9;verticalAlign=top;align=left;spacingLeft=14;spacingTop=8;fontColor=#0f6f6c;fontSize=12;fontStyle=1;" vertex="1" parent="1">
-          <mxGeometry x="70" y="312" width="470" height="296" as="geometry" />
-        </mxCell>
-        <mxCell id="subnet" value="snet-private-endpoints · /26" style="rounded=1;html=1;dashed=1;dashPattern=4 3;strokeColor=#7fb7b5;fillColor=#FFFFFF;verticalAlign=top;align=left;spacingLeft=12;spacingTop=6;fontColor=#0f6f6c;fontSize=11;fontStyle=1;" vertex="1" parent="1">
-          <mxGeometry x="90" y="356" width="300" height="160" as="geometry" />
-        </mxCell>
-        <mxCell id="pe" value="Private Endpoint&#10;groupId: grafana" style="rounded=1;html=1;whiteSpace=wrap;fillColor=#E9F5F4;strokeColor=#127c79;fontColor=#0f6f6c;fontSize=12;fontStyle=1;" vertex="1" parent="1">
-          <mxGeometry x="108" y="398" width="264" height="96" as="geometry" />
-        </mxCell>
-        <mxCell id="dns" value="Private DNS&#10;grafana zone" style="rounded=1;html=1;whiteSpace=wrap;fillColor=#E9F5F4;strokeColor=#127c79;fontColor=#0f6f6c;fontSize=11;fontStyle=1;" vertex="1" parent="1">
-          <mxGeometry x="406" y="398" width="122" height="96" as="geometry" />
-        </mxCell>
-
-        <mxCell id="grafana" value="Managed Grafana&#10;private · /api/azure-mcp" style="rounded=1;html=1;whiteSpace=wrap;fillColor=#FFF1E6;strokeColor=#F46800;fontColor=#8a3b00;fontSize=13;fontStyle=1;" vertex="1" parent="1">
-          <mxGeometry x="600" y="360" width="210" height="96" as="geometry" />
-        </mxCell>
-
-        <mxCell id="ds" value="Customer-provided data sources&#10;private · restored from backup · bring your own" style="rounded=1;html=1;dashed=1;dashPattern=5 4;strokeColor=#9CC4E4;fillColor=#F3F7FB;verticalAlign=top;align=center;spacingTop=8;fontColor=#5b7795;fontSize=12;fontStyle=1;" vertex="1" parent="1">
-          <mxGeometry x="890" y="120" width="350" height="430" as="geometry" />
+        <mxCell id="ds" value="Customer-provided data sources&#10;bring your own · restored from backup" style="rounded=1;html=1;dashed=1;dashPattern=5 4;strokeColor=#9CC4E4;fillColor=#F3F7FB;verticalAlign=top;align=center;spacingTop=8;fontColor=#5b7795;fontSize=12;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="910" y="120" width="330" height="392" as="geometry" />
         </mxCell>
         <mxCell id="prom" value="Prometheus — metrics" style="rounded=1;html=1;whiteSpace=wrap;fillColor=#FDEAE3;strokeColor=#E6522C;fontColor=#7a2b15;fontSize=13;fontStyle=1;" vertex="1" parent="1">
-          <mxGeometry x="920" y="196" width="290" height="70" as="geometry" />
+          <mxGeometry x="940" y="186" width="270" height="70" as="geometry" />
         </mxCell>
         <mxCell id="loki" value="Loki — logs" style="rounded=1;html=1;whiteSpace=wrap;fillColor=#FFF6E0;strokeColor=#FEBE2E;fontColor=#7a5a00;fontSize=13;fontStyle=1;" vertex="1" parent="1">
-          <mxGeometry x="920" y="300" width="290" height="70" as="geometry" />
+          <mxGeometry x="940" y="290" width="270" height="70" as="geometry" />
         </mxCell>
         <mxCell id="tempo" value="Tempo — traces" style="rounded=1;html=1;whiteSpace=wrap;fillColor=#ECE6FA;strokeColor=#5C36C6;fontColor=#3c2585;fontSize=13;fontStyle=1;" vertex="1" parent="1">
-          <mxGeometry x="920" y="404" width="290" height="70" as="geometry" />
+          <mxGeometry x="940" y="394" width="270" height="70" as="geometry" />
         </mxCell>
 
-        <mxCell id="e_pe_grafana" value="Private Link" style="endArrow=block;html=1;rounded=0;strokeColor=#127c79;fontColor=#127c79;fontSize=11;fontStyle=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="pe" target="grafana">
-          <mxGeometry relative="1" as="geometry" />
-        </mxCell>
-        <mxCell id="e_dns_pe" style="endArrow=block;html=1;rounded=0;dashed=1;dashPattern=4 3;strokeColor=#7fb7b5;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="dns" target="pe">
-          <mxGeometry relative="1" as="geometry" />
-        </mxCell>
-        <mxCell id="e_agent_grafana" value="MCP (private)" style="endArrow=block;html=1;rounded=1;strokeColor=#33506b;fontColor=#33506b;fontSize=11;fontStyle=1;" edge="1" parent="1" source="agent" target="pe">
-          <mxGeometry relative="1" as="geometry" />
-        </mxCell>
-        <mxCell id="e_mi_agent" value="identity" style="endArrow=block;html=1;rounded=0;strokeColor=#8a7fd6;fontColor=#6B69D6;fontSize=11;fontStyle=1;" edge="1" parent="1" source="mi" target="agent">
+        <mxCell id="e_mi_agent" value="identity" style="endArrow=block;html=1;rounded=0;strokeColor=#8a7fd6;fontColor=#6B69D6;fontSize=11;fontStyle=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="mi" target="agent">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="e_mi_grafana" value="Grafana Viewer (RBAC)" style="endArrow=block;html=1;rounded=1;dashed=1;dashPattern=5 4;strokeColor=#8a7fd6;fontColor=#6B69D6;fontSize=10;fontStyle=1;" edge="1" parent="1" source="mi" target="grafana">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="e_grafana_prom" value="query (private)" style="endArrow=block;html=1;rounded=1;strokeColor=#33506b;fontColor=#33506b;fontSize=11;fontStyle=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="grafana" target="prom">
+        <mxCell id="e_agent_grafana" value="MCP over HTTPS&#10;(Entra-authenticated)" style="endArrow=block;html=1;rounded=1;strokeColor=#33506b;fontColor=#33506b;fontSize=11;fontStyle=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="agent" target="grafana">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_entra_link" value="token issued by" style="endArrow=open;html=1;rounded=1;dashed=1;dashPattern=3 3;strokeColor=#1B72E8;fontColor=#1B72E8;fontSize=10;fontStyle=1;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;" edge="1" parent="1" source="entra" target="grafana">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_grafana_prom" value="query" style="endArrow=block;html=1;rounded=1;strokeColor=#33506b;fontColor=#33506b;fontSize=11;fontStyle=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="grafana" target="prom">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="e_grafana_loki" style="endArrow=block;html=1;rounded=1;strokeColor=#33506b;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="grafana" target="loki">
@@ -78,8 +65,8 @@
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
 
-        <mxCell id="note" value="Grafana is the only Private Link-capable resource here; the SRE Agent and managed identity are control-plane only." style="text;html=1;align=left;verticalAlign=middle;fontColor=#7a93ab;fontSize=11;" vertex="1" parent="1">
-          <mxGeometry x="56" y="612" width="780" height="20" as="geometry" />
+        <mxCell id="note" value="No VNet or private endpoint: the Microsoft-managed SRE Agent has no VNet injection, so it reaches Grafana over the public, Entra-protected endpoint. A private endpoint would block the agent." style="text;html=1;align=left;verticalAlign=middle;fontColor=#7a93ab;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="40" y="664" width="1180" height="20" as="geometry" />
         </mxCell>
       </root>
     </mxGraphModel>

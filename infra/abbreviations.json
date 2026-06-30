@@ -2,7 +2,5 @@
   "managedIdentityUserAssignedIdentities": "id-",
   "dashboardGrafana": "amg-",
   "appAgents": "sre-",
-  "resourcesResourceGroups": "rg-",
-  "networkVirtualNetworks": "vnet-",
-  "networkPrivateEndpoints": "pep-"
+  "resourcesResourceGroups": "rg-"
 }

@@ -4,11 +4,9 @@ After `azd up` (or the `az` deployment) finishes, do the following to get the SR
 
 ![Architecture](architecture.svg)
 
-## 1. Confirm the networking posture
+## 1. Confirm the access summary
 
-The access summary prints whether private networking is on and Grafana's public-access setting. If you deployed **private-only** (`grafanaPublicNetworkAccess = Disabled`), Grafana's UI/API is reachable **only from inside the VNet** — set up Bastion / a jumpbox / VPN before continuing.
-
-> ⚠️ **SRE Agent reachability:** the agent is Microsoft-managed with no VNet injection. If, after connecting the MCP server, the agent cannot reach a private Grafana, redeploy with `GRAFANA_PUBLIC_NETWORK_ACCESS=Enabled` (a private endpoint is still created; the agent uses the public, Entra-protected endpoint).
+The `postprovision` access summary prints the Grafana URL, the MCP endpoint, and the agent/identity IDs. Grafana is on its **public endpoint secured by Entra ID + RBAC** (API keys and anonymous access are disabled), so the Microsoft-managed SRE Agent can reach it directly — there is nothing to configure on the network side.
 
 ## 2. Grant yourself access to the SRE Agent
 
@@ -27,7 +25,7 @@ Allow 5–10 minutes for propagation, then sign in to <https://sre.azure.com> wi
 
 ## 3. Add your data sources to Grafana
 
-The agent only sees what Grafana can query. Open Grafana (from inside the VNet if private) and add your data sources — typically **restored from backup**:
+The agent only sees what Grafana can query. Open Grafana and add your data sources — typically **restored from backup**:
 
 1. Grafana → **Connections → Data sources → Add data source**.
 2. Add **Prometheus**, **Loki**, and/or **Tempo** pointing at your restored backends.

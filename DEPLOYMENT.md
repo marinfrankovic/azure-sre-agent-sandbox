@@ -1,12 +1,12 @@
 # Deployment guide
 
-End-to-end deployment of the private-by-default Azure SRE Agent + Managed Grafana sandbox.
+End-to-end deployment of the Azure SRE Agent + Managed Grafana sandbox.
 
 ![Architecture](architecture.svg)
 
 ## Prerequisites
 
-- Azure subscription with permission to create resource groups, networking, and role assignments (Owner or User Access Administrator + Network Contributor + Contributor).
+- Azure subscription with permission to create resource groups and role assignments (Owner, or User Access Administrator + Contributor).
 - [Azure CLI](https://learn.microsoft.com/cli/azure/install-azure-cli) `az`.
 - [Azure Developer CLI](https://learn.microsoft.com/azure/developer/azure-developer-cli/install-azd) `azd` (recommended).
 - A region that supports the Azure SRE Agent: **swedencentral, uksouth, eastus2, australiaeast, francecentral, canadacentral, koreacentral**.
@@ -17,18 +17,21 @@ Register the resource providers once (the preflight warns if any are missing):
 az provider register --namespace Microsoft.App
 az provider register --namespace Microsoft.Dashboard
 az provider register --namespace Microsoft.ManagedIdentity
-az provider register --namespace Microsoft.Network
 ```
 
-## Networking model
+## Networking & security model
 
-| Mode | `enablePrivateNetworking` | `grafanaPublicNetworkAccess` | Result |
-| --- | --- | --- | --- |
-| **Private-only (default)** | `true` | `Disabled` | VNet + private endpoint; Grafana reachable only from the VNet |
-| **Private + public** | `true` | `Enabled` | VNet + private endpoint, but Grafana also reachable publicly (use if the SRE Agent can't reach private Grafana) |
-| **Public only** | `false` | *(ignored, forced Enabled)* | No VNet/private endpoint; public endpoints + Entra/RBAC |
+There is no VNet or private endpoint. The Azure SRE Agent is a Microsoft-managed service with **no VNet injection**, so it can only reach Grafana over the **public endpoint**. That endpoint is hardened so the public surface is an authentication boundary, not an open door:
 
-> ⚠️ The Azure SRE Agent is Microsoft-managed and has no VNet injection today. Validate that it can reach a **private** Grafana in your tenant. If it can't, use **Private + public**.
+| Control | Setting |
+| --- | --- |
+| Grafana public network access | `Enabled` (required for the managed agent to connect) |
+| Grafana authentication | Entra ID — required for every request |
+| Grafana API keys | `Disabled` |
+| Anonymous access | Off |
+| Agent → Grafana | Managed identity + **Grafana Viewer** (read-only) |
+
+> A private endpoint would block the agent and is therefore intentionally omitted. If you later need network-level isolation, you would need an agent connectivity model that supports private reach — not available today.
 
 ## Option A — azd (recommended)
 
@@ -36,18 +39,13 @@ az provider register --namespace Microsoft.Network
 azd auth login
 azd env new sreagent-sbx
 azd env set AZURE_LOCATION swedencentral
-
-# Networking (defaults shown):
-# azd env set ENABLE_PRIVATE_NETWORKING true
-# azd env set GRAFANA_PUBLIC_NETWORK_ACCESS Disabled
-
 azd up
 ```
 
 What happens:
 1. **preprovision** → `scripts/preflight-region` validates region + providers.
-2. **provision** → `infra/main.bicep` creates the RG, identity, Grafana, SRE Agent, RBAC, and (when enabled) the VNet, Private DNS zone, and Grafana private endpoint.
-3. **postprovision** → `scripts/show-access` prints the access summary, including the networking posture.
+2. **provision** → `infra/main.bicep` creates the RG, identity, Grafana, SRE Agent, and RBAC.
+3. **postprovision** → `scripts/show-access` prints the access summary.
 
 ## Option B — az CLI
 
@@ -56,8 +54,7 @@ az deployment sub create \
   --name sre-sandbox \
   --location swedencentral \
   --template-file infra/main.bicep \
-  --parameters environmentName=sreagent-sbx location=swedencentral \
-               enablePrivateNetworking=true grafanaPublicNetworkAccess=Disabled
+  --parameters environmentName=sreagent-sbx location=swedencentral
 ```
 
 Grant yourself agent access during deployment:
@@ -76,10 +73,6 @@ Grant yourself agent access during deployment:
 | `tags` | no | `{}` | Tags on every resource |
 | `agentAccessPrincipalId` | no | `` | Principal granted SRE Agent Standard User |
 | `agentAccessPrincipalType` | no | `User` | `User`, `Group`, or `ServicePrincipal` |
-| `enablePrivateNetworking` | no | `true` | Deploy VNet + Private DNS + Grafana private endpoint |
-| `grafanaPublicNetworkAccess` | no | `Disabled` | Grafana public access when private networking is on |
-| `vnetAddressPrefix` | no | `10.42.0.0/24` | VNet address space |
-| `privateEndpointSubnetPrefix` | no | `10.42.0.0/26` | Subnet for private endpoints |
 
 ## Outputs
 
@@ -88,9 +81,6 @@ Grant yourself agent access during deployment:
 | `AZURE_RESOURCE_GROUP` | Resource group name |
 | `AZURE_GRAFANA_ENDPOINT` | Grafana URL |
 | `AZURE_GRAFANA_MCP_ENDPOINT` | Grafana MCP endpoint (`…/api/azure-mcp`) |
-| `AZURE_GRAFANA_PUBLIC_NETWORK_ACCESS` | Effective Grafana public-access setting |
-| `AZURE_PRIVATE_NETWORKING_ENABLED` | Whether private networking was deployed |
-| `AZURE_VNET_ID` | VNet resource ID (empty if private networking off) |
 | `AZURE_SRE_AGENT_ID` / `AZURE_SRE_AGENT_NAME` | SRE Agent identifiers |
 | `AZURE_USER_ASSIGNED_IDENTITY_*` | Managed identity IDs |
 
@@ -100,24 +90,17 @@ Grant yourself agent access during deployment:
 az bicep build --file infra/main.bicep --stdout > $null
 ```
 
-(Benign `BCP318` warnings about conditional module outputs are expected.)
+## Connecting the agent to Grafana (MCP)
 
-## Reaching a private Grafana
-
-When `grafanaPublicNetworkAccess = Disabled`, the Grafana UI/API resolves to a private IP and is only reachable from the VNet. Add one of:
-- **Azure Bastion + jumpbox VM** in the VNet (or a peered VNet).
-- **VPN / ExpressRoute** into the VNet.
-- A **peered hub** with existing connectivity.
-
-The template does not deploy Bastion/jumpbox — wire up access to suit your environment.
+The agent reaches Grafana at `<AZURE_GRAFANA_ENDPOINT>/api/azure-mcp` using its managed identity (already granted **Grafana Viewer**). No networking setup is required — Grafana's public, Entra-protected endpoint is directly reachable by the Microsoft-managed agent.
 
 ## Troubleshooting
 
 | Symptom | Cause | Fix |
 | --- | --- | --- |
 | Preflight fails on region | Region not supported | Pick a supported region |
-| Agent can't connect to Grafana (private) | SRE Agent can't reach private endpoint | Redeploy with `grafanaPublicNetworkAccess=Enabled` |
-| Can't open Grafana UI | Public access Disabled | Reach it from inside the VNet (Bastion/VPN) |
+| Agent can't connect to Grafana | Missing role / propagation delay | Confirm the agent identity has **Grafana Viewer**; allow 5–10 min for RBAC to propagate |
+| Can't open Grafana UI | Not signed in to Entra / no Grafana role | Sign in with an account that has a Grafana role in this instance |
 | Can't use the agent | Missing data-plane role | Grant SRE Agent Reader+ on the agent (Owner is not enough) |
 | Access just granted but blocked | RBAC propagation | Wait 5–10 min; confirm account/tenant |
 | Grafana shows no data | No data sources added | Add your data sources (restore from backup) |
