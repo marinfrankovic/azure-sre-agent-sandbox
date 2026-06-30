@@ -60,6 +60,11 @@ Data Collection Endpoint · Data Collection Rule · Storage Account (6 container
 Key Vault · Azure Data Explorer cluster + `sreagent` database ·
 Azure Managed Grafana · Azure SRE Agent.
 
+**Deployment time:** ~15–20 min (Data Explorer is the long pole).
+**Estimated cost:** ~$6–8/day idle (Sweden Central list price), dominated by the
+Data Explorer dev cluster and Managed Grafana. See [DEPLOYMENT.md](DEPLOYMENT.md#estimated-cost)
+for the breakdown. Tear down when done to stop charges.
+
 ## Key outputs
 
 After deployment, an **access summary** is printed automatically (azd

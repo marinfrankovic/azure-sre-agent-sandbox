@@ -26,7 +26,35 @@ A single-subscription, isolated sandbox with no production connectivity:
 
 RBAC is least-privilege; the agent identity gets `Reader` + scoped reader roles on Grafana, Log Analytics, Azure Monitor Workspace, Data Explorer, Application Insights, and Storage.
 
+### Deployment time
+
+End-to-end provisioning takes **~15–20 minutes**. The long pole is the Azure
+Data Explorer cluster + `sreagent` database (~10–15 min); every other resource
+completes in the first few minutes.
+
+### Estimated cost
+
+Approximate **list-price** estimate (Sweden Central, idle sandbox). Actual cost
+varies by region, data volume, and SRE Agent usage — always confirm with the
+[Azure pricing calculator](https://azure.microsoft.com/pricing/calculator/).
+
+| Component | Billing model | Approx. idle cost |
+|-----------|---------------|-------------------|
+| Azure Data Explorer (Dev/No-SLA, `D11_v2`, 1 instance) | Fixed compute | **~$3–4 / day** |
+| Azure Managed Grafana (Standard) | Fixed base + per active user | **~$2 / day** + ~$9/user/mo |
+| Azure Monitor Workspace (Managed Prometheus) | Per metric sample ingested | ~$0 idle |
+| Log Analytics + Application Insights | Per GB ingested (~$2.30/GB) | ~$0 idle |
+| Storage (Standard LRS, Hot) | Per GB + transactions | < $0.10 / day |
+| Key Vault, DCE/DCR, Managed Identity | Per operation / free | ~$0 |
+| Azure SRE Agent | Usage-based (per investigation) | Varies with use |
+| **Total (idle)** | | **≈ $6–8 / day (~$180–240 / mo)** |
+
+> Cost is dominated by the **Data Explorer dev cluster** and **Managed Grafana**.
+> For short-lived demos, deploy, test, then run the teardown (Section 8) to stop
+> charges. Stopping the ADX cluster between sessions also reduces cost.
+
 ---
+
 
 ## 2. Prerequisites
 
