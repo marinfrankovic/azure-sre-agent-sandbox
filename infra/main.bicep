@@ -7,9 +7,9 @@ targetScope = 'subscription'
 // own Grafana data sources (e.g. Prometheus/Loki/Tempo restored from backup).
 //
 // Grafana uses its public endpoint secured by Entra ID + RBAC (no API keys, no
-// anonymous access). The Azure SRE Agent is a Microsoft-managed service with no
-// VNet injection, so a private endpoint would block it — the public, Entra-gated
-// endpoint is the simplest design that is both secure and actually works.
+// anonymous access). The Azure SRE Agent is a Microsoft-managed service, so it
+// reaches Grafana over that public, Entra-gated endpoint — the simplest design
+// that is both secure and works.
 // ============================================================================
 
 @minLength(1)
@@ -76,9 +76,9 @@ module identity 'modules/identity.bicep' = {
 }
 
 // ── Managed Grafana (public endpoint, secured by Entra ID + RBAC) ───────────
-// The Azure SRE Agent is Microsoft-managed with no VNet injection, so it reaches
-// Grafana's MCP endpoint over the public endpoint. Access is gated by Entra ID
-// auth + Grafana RBAC; API keys and anonymous access are disabled.
+// The Azure SRE Agent is Microsoft-managed, so it reaches Grafana's MCP endpoint
+// over the public endpoint. Access is gated by Entra ID auth + Grafana RBAC;
+// API keys and anonymous access are disabled.
 
 module grafana 'modules/grafana.bicep' = {
   name: 'grafana'

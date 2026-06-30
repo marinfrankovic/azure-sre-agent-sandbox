@@ -21,7 +21,7 @@ az provider register --namespace Microsoft.ManagedIdentity
 
 ## Networking & security model
 
-There is no VNet or private endpoint. The Azure SRE Agent is a Microsoft-managed service with **no VNet injection**, so it can only reach Grafana over the **public endpoint**. That endpoint is hardened so the public surface is an authentication boundary, not an open door:
+The Azure SRE Agent is a Microsoft-managed service, so it reaches Grafana over Grafana's **public endpoint**. That endpoint is hardened so the public surface is an authentication boundary, not an open door:
 
 | Control | Setting |
 | --- | --- |
@@ -30,8 +30,6 @@ There is no VNet or private endpoint. The Azure SRE Agent is a Microsoft-managed
 | Grafana API keys | `Disabled` |
 | Anonymous access | Off |
 | Agent → Grafana | Managed identity + **Grafana Viewer** (read-only) |
-
-> A private endpoint would block the agent and is therefore intentionally omitted. If you later need network-level isolation, you would need an agent connectivity model that supports private reach — not available today.
 
 ## Option A — azd (recommended)
 

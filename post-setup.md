@@ -6,7 +6,7 @@ After `azd up` (or the `az` deployment) finishes, do the following to get the SR
 
 ## 1. Confirm the access summary
 
-The `postprovision` access summary prints the Grafana URL, the MCP endpoint, and the agent/identity IDs. Grafana is on its **public endpoint secured by Entra ID + RBAC** (API keys and anonymous access are disabled), so the Microsoft-managed SRE Agent can reach it directly — there is nothing to configure on the network side.
+The `postprovision` access summary prints the Grafana URL, the MCP endpoint, and the agent/identity IDs. Grafana is on its **public endpoint secured by Entra ID + RBAC** (API keys and anonymous access are disabled), so the Microsoft-managed SRE Agent can reach it directly.
 
 ## 2. Grant yourself access to the SRE Agent
 
@@ -29,8 +29,7 @@ The agent only sees what Grafana can query. Open Grafana and add your data sourc
 
 1. Grafana → **Connections → Data sources → Add data source**.
 2. Add **Prometheus**, **Loki**, and/or **Tempo** pointing at your restored backends.
-3. If those backends are private, use Grafana **managed private endpoints** to reach them.
-4. Set the appropriate auth for each source and **Save & test**.
+3. Set the appropriate auth for each source and **Save & test**.
 
 ## 4. Connect the agent to Grafana (MCP)
 

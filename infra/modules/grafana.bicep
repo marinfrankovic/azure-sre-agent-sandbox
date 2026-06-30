@@ -10,7 +10,7 @@ param tags object = {}
 // Managed Grafana with a system-assigned identity and the Azure MCP endpoint.
 // The endpoint is public but secured by Entra ID authentication + Grafana RBAC;
 // API keys and anonymous access are disabled. This is what lets the Microsoft-
-// managed SRE Agent (no VNet injection) reach the MCP endpoint.
+// managed SRE Agent reach the MCP endpoint.
 // No Azure data-source RBAC is granted here: bring your own data sources
 // (e.g. Prometheus/Loki/Tempo restored from backup) and configure their auth.
 resource grafana 'Microsoft.Dashboard/grafana@2023-09-01' = {

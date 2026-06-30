@@ -2,7 +2,7 @@
 
 A deploy-and-go sandbox for evaluating the **Azure SRE Agent** with **Azure Managed Grafana**. The agent investigates incidents by querying Grafana through Grafana's MCP endpoint, so the only services this template provisions are the agent, its identity, and Grafana.
 
-**Why no private endpoint?** The Azure SRE Agent (`Microsoft.App/agents`) is a **Microsoft-managed service with no VNet injection** — it cannot reach a Grafana that is locked behind a private endpoint. Putting Grafana on Private Link would simply break the agent. The simplest design that is **both secure and actually works** is to keep Grafana on its **public endpoint, hardened by Entra ID authentication + Grafana RBAC**, with **API keys and anonymous access disabled**. Every call is authenticated and authorized; there is no anonymous network path in.
+**How access works.** The Azure SRE Agent (`Microsoft.App/agents`) is a **Microsoft-managed service**, so it reaches Grafana over Grafana's **public endpoint, hardened by Entra ID authentication + Grafana RBAC**, with **API keys and anonymous access disabled**. Every call is authenticated and authorized; there is no anonymous path in.
 
 **Bring your own observability data.** This template does *not* stand up Prometheus, Loki, Tempo, or any data store. You add your data sources to Grafana yourself — typically by restoring them from backup — and the SRE Agent reaches that data through Grafana.
 
@@ -17,7 +17,7 @@ A deploy-and-go sandbox for evaluating the **Azure SRE Agent** with **Azure Mana
 | Azure SRE Agent | `Microsoft.App/agents` | The AI SRE that investigates incidents |
 | Azure Managed Grafana | `Microsoft.Dashboard/grafana` | Dashboards + the MCP endpoint the agent queries |
 
-No VNet, no private endpoint, and no Private DNS zone — none of them would help the Microsoft-managed agent reach Grafana, and they would block it if Grafana were made private. Everything else (Prometheus/Loki/Tempo, storage, logs) is **yours to bring** — secure those data sources on your own network and connect them to Grafana.
+That's the whole footprint. Everything else (Prometheus/Loki/Tempo, storage, logs) is **yours to bring** — secure those data sources on your own network and connect them to Grafana.
 
 ## How it's secured
 
