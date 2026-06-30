@@ -1,0 +1,10 @@
+# Azure SRE Agent sandbox — azd project
+
+name: azure-sre-agent-sandbox
+metadata:
+  template: azure-sre-agent-sandbox@1.0.0
+
+infra:
+  provider: bicep
+  path: infra
+  module: main
