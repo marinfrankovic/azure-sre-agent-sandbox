@@ -10,6 +10,9 @@ param tags object = {}
 @description('Log Analytics workspace resource ID for diagnostic settings.')
 param logAnalyticsWorkspaceId string
 
+@description('Enable purge protection. Leave false for disposable sandboxes so the vault can be fully purged on teardown.')
+param enablePurgeProtection bool = false
+
 resource keyVault 'Microsoft.KeyVault/vaults@2023-07-01' = {
   name: name
   location: location
@@ -24,7 +27,7 @@ resource keyVault 'Microsoft.KeyVault/vaults@2023-07-01' = {
     publicNetworkAccess: 'Enabled'
     enableSoftDelete: true
     softDeleteRetentionInDays: 7
-    enablePurgeProtection: true
+    enablePurgeProtection: enablePurgeProtection ? true : null
     networkAcls: {
       defaultAction: 'Allow'
       bypass: 'AzureServices'

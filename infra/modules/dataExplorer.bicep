@@ -16,12 +16,15 @@ param logAnalyticsWorkspaceId string
 @description('Principal ID granted Viewer access to the database (least privilege).')
 param readerPrincipalId string
 
+@description('Azure Data Explorer dev/test SKU. Must be a valid Kusto SKU available in the target region (validated by scripts/preflight-region).')
+param skuName string = 'Dev(No SLA)_Standard_D11_v2'
+
 resource cluster 'Microsoft.Kusto/clusters@2024-04-13' = {
   name: clusterName
   location: location
   tags: tags
   sku: {
-    name: 'Dev(No SLA)_Standard_E2a_v4'
+    name: skuName
     tier: 'Basic'
     capacity: 1
   }

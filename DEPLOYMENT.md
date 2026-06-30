@@ -49,6 +49,23 @@ az provider register --namespace Microsoft.Insights
 az provider register --namespace Microsoft.OperationalInsights
 ```
 
+### Region support (validated automatically)
+
+The Azure SRE Agent (`Microsoft.App/agents`) is only available in: **swedencentral,
+uksouth, eastus2, australiaeast, francecentral, canadacentral, koreacentral**, and
+the Azure Data Explorer dev SKU must be available in the chosen region.
+
+Run the **preflight** to confirm your region before deploying (it also runs
+automatically as an `azd` preprovision hook):
+
+```bash
+./scripts/preflight-region.ps1 -Location <region>   # PowerShell
+./scripts/preflight-region.sh <region>              # bash
+```
+
+If the region is unsupported, the check fails with the list of valid regions so
+you can pick another one.
+
 ---
 
 ## 3. Configure
@@ -63,7 +80,7 @@ Edit `.env`:
 ```ini
 AZURE_SUBSCRIPTION_ID=<your-subscription-guid>
 AZURE_ENV_NAME=sreagent-sbx
-AZURE_LOCATION=westeurope          # any supported region
+AZURE_LOCATION=swedencentral       # must be an SRE Agent-supported region (see above)
 AZURE_RESOURCE_GROUP=              # optional; blank => rg-<env>-sre
 AZURE_TAGS={"workload":"sre-agent-sandbox","environment":"poc"}
 ```
@@ -77,12 +94,14 @@ AZURE_TAGS={"workload":"sre-agent-sandbox","environment":"poc"}
 ```bash
 azd auth login
 azd env new $AZURE_ENV_NAME
-azd env set AZURE_LOCATION westeurope
+azd env set AZURE_LOCATION swedencentral
 azd env set AZURE_SUBSCRIPTION_ID <subscription-guid>
 azd provision
 ```
 
-`azd provision` deploys infrastructure only (there is no app code). Outputs are written to the azd environment.
+`azd provision` deploys infrastructure only (there is no app code). A region
+preflight runs first; on success, an access summary is printed at the end.
+Outputs are written to the azd environment.
 
 ### Option B — Azure CLI
 
@@ -90,11 +109,17 @@ azd provision
 az login
 az account set --subscription <subscription-guid>
 
+# Preflight the region first (recommended)
+./scripts/preflight-region.ps1 -Location swedencentral
+
 az deployment sub create \
   --name sre-agent-sandbox \
-  --location westeurope \
+  --location swedencentral \
   --template-file infra/main.bicep \
-  --parameters environmentName=sreagent-sbx location=westeurope
+  --parameters environmentName=sreagent-sbx location=swedencentral
+
+# Then print the access summary
+./scripts/show-access.ps1 -DeploymentName sre-agent-sandbox
 ```
 
 ### Validate before deploying (no changes made)
@@ -105,9 +130,9 @@ az bicep build --file infra/main.bicep
 
 # What-if
 az deployment sub what-if \
-  --location westeurope \
+  --location swedencentral \
   --template-file infra/main.bicep \
-  --parameters environmentName=sreagent-sbx location=westeurope
+  --parameters environmentName=sreagent-sbx location=swedencentral
 ```
 
 ---
@@ -211,9 +236,15 @@ az group delete --name <resource-group-name> --yes --no-wait
 
 ## 9. Notes
 
-- The Azure SRE Agent uses the preview type `Microsoft.App/agents`; `bicep build`
-  emits a non-blocking **BCP081** warning. Confirm the latest API version against
-  <https://learn.microsoft.com/azure/sre-agent/deploy-iac> before production use.
+- The Azure SRE Agent (`Microsoft.App/agents`, API `2026-01-01`) is region-gated;
+  the `scripts/preflight-region` check validates support before deploying.
+  `bicep build` may emit a non-blocking **BCP081** warning if the type isn't yet
+  in your local Bicep type index — this does not block deployment.
+- The Azure Data Explorer dev SKU defaults to `Dev(No SLA)_Standard_D11_v2`
+  (broadly available, including Sweden Central). Override with `dataExplorerSkuName`
+  if your region offers a different dev SKU; the preflight lists what's available.
+- Key Vault purge protection is **off by default** so the sandbox can be fully
+  torn down; set `enablePurgeProtection=true` for non-disposable environments.
 - No service account tokens, connectors, or MCP connections are created by the
   template — only infrastructure and RBAC prerequisites.
 - Everything deploys into the single selected region with no production connectivity.

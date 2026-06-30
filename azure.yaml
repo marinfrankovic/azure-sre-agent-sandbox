@@ -8,3 +8,25 @@ infra:
   provider: bicep
   path: infra
   module: main
+
+# Region capability preflight — runs before provisioning so an unsupported
+# region is reported up front instead of failing mid-deployment.
+hooks:
+  preprovision:
+    posix:
+      shell: sh
+      continueOnError: false
+      run: scripts/preflight-region.sh "$AZURE_LOCATION"
+    windows:
+      shell: pwsh
+      continueOnError: false
+      run: ./scripts/preflight-region.ps1 -Location $env:AZURE_LOCATION
+  postprovision:
+    posix:
+      shell: sh
+      continueOnError: true
+      run: scripts/show-access.sh
+    windows:
+      shell: pwsh
+      continueOnError: true
+      run: ./scripts/show-access.ps1

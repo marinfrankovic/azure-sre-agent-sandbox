@@ -19,6 +19,9 @@ param resourceGroupName string = ''
 @description('Tags applied to every resource.')
 param tags object = {}
 
+@description('Azure Data Explorer dev/test SKU. Must be a valid Kusto SKU available in the target region (see scripts/preflight-region).')
+param dataExplorerSkuName string = 'Dev(No SLA)_Standard_D11_v2'
+
 // ============================================================================
 // Naming
 // ============================================================================
@@ -146,6 +149,7 @@ module dataExplorer 'modules/dataExplorer.bicep' = {
     tags: commonTags
     logAnalyticsWorkspaceId: logAnalytics.outputs.resourceId
     readerPrincipalId: identity.outputs.principalId
+    skuName: dataExplorerSkuName
   }
 }
 
