@@ -17,7 +17,7 @@ A deploy-and-go sandbox for evaluating the **Azure SRE Agent** with **Azure Mana
 | Azure SRE Agent | `Microsoft.App/agents` | The AI SRE that investigates incidents |
 | Azure Managed Grafana | `Microsoft.Dashboard/grafana` | Dashboards + the MCP endpoint the agent queries |
 
-That's the whole footprint. Everything else (Prometheus/Loki/Tempo, storage, logs) is **yours to bring** — secure those data sources on your own network and connect them to Grafana.
+That's the template's footprint. Note that creating the SRE Agent also **auto-provisions an Application Insights instance and a Log Analytics workspace** (for the agent's own observability) — these appear in your subscription and carry pay-per-GB ingestion costs. Everything else (Prometheus/Loki/Tempo, storage, logs) is **yours to bring** — secure those data sources on your own network and connect them to Grafana.
 
 ## How it's secured
 
@@ -45,7 +45,21 @@ The deployer assignment is driven by `agentAccessPrincipalId` (defaults to the s
 
 ## Cost & time
 
-- **Cost:** roughly **~$2/day** — Managed Grafana Standard. The agent, identity, and RG have no standing charge.
+> **The SRE Agent is not free.** Billing is in **Azure Agent Units (AAU)** at **$0.10/AAU**, with two parts:
+> - **Always-on (fixed):** **4 AAU/agent-hour = $0.40/hour ≈ $9.60/day (~$288/month)** for as long as the agent *exists*, even when idle. It only stops when you **delete** the agent (stopping the agent does **not** stop always-on charges).
+> - **Active flow (usage):** metered on LLM tokens per task — e.g. a quick question ≈ 3.8 AAU (~$0.38), an automated incident investigation ≈ 35 AAU (~$3.50) on Claude Opus 4.6 (cheaper on GPT models). Set a monthly AAU cap in **Settings → Agent consumption**.
+
+Other standing costs:
+
+| Item | Approx. cost |
+| --- | --- |
+| Azure SRE Agent — always-on | **~$9.60/day** (4 AAU/hr × $0.10), plus active-flow usage |
+| Azure Managed Grafana (Standard) | ~$2/day |
+| Application Insights + Log Analytics workspace (auto-created with the agent) | pay-per-GB ingestion (small for a sandbox) |
+| Managed identity + resource group | no charge |
+
+So a **mostly-idle sandbox is roughly ~$12/day (~$350/month)** before any meaningful agent activity — dominated by the agent's always-on baseline, not Grafana. **Delete the agent (or run `azd down`) when you're done** to stop the always-on charge. Figures are list price (USD, East US class regions); see the [official pricing](https://azure.microsoft.com/pricing/details/sre-agent/) and [billing docs](https://learn.microsoft.com/azure/sre-agent/pricing-billing) for current rates, free/trial AAUs, and your region/currency.
+
 - **Deployment time:** about **5–10 minutes**.
 
 ## Supported regions
