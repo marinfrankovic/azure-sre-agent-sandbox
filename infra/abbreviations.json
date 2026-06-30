@@ -1,13 +1,5 @@
 {
   "managedIdentityUserAssignedIdentities": "id-",
-  "operationalInsightsWorkspaces": "log-",
-  "insightsComponents": "appi-",
-  "monitorAccounts": "amw-",
-  "dataCollectionEndpoints": "dce-",
-  "dataCollectionRules": "dcr-",
-  "storageStorageAccounts": "st",
-  "keyVaultVaults": "kv",
-  "kustoClusters": "adx",
   "dashboardGrafana": "amg-",
   "appAgents": "sre-",
   "resourcesResourceGroups": "rg-"

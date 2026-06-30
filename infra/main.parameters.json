@@ -13,6 +13,9 @@
     },
     "tags": {
       "value": "${AZURE_TAGS}"
+    },
+    "agentAccessPrincipalId": {
+      "value": "${AZURE_PRINCIPAL_ID}"
     }
   }
 }

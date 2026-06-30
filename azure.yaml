@@ -1,16 +1,15 @@
-# Azure SRE Agent sandbox — azd project
+# Azure SRE Agent + Managed Grafana sandbox — azd project
 
-name: azure-sre-agent-sandbox
+name: azure-sre-agent-grafana
 metadata:
-  template: azure-sre-agent-sandbox@1.0.0
+  template: azure-sre-agent-grafana@1.0.0
 
 infra:
   provider: bicep
   path: infra
   module: main
 
-# Region capability preflight — runs before provisioning so an unsupported
-# region is reported up front instead of failing mid-deployment.
+# Region preflight runs before provisioning; the access summary runs after.
 hooks:
   preprovision:
     posix:
