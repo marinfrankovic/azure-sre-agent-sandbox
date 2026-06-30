@@ -16,6 +16,12 @@
     },
     "agentAccessPrincipalId": {
       "value": "${AZURE_PRINCIPAL_ID}"
+    },
+    "enablePrivateNetworking": {
+      "value": ${ENABLE_PRIVATE_NETWORKING=true}
+    },
+    "grafanaPublicNetworkAccess": {
+      "value": "${GRAFANA_PUBLIC_NETWORK_ACCESS=Disabled}"
     }
   }
 }

@@ -4,7 +4,13 @@ After `azd up` (or the `az` deployment) finishes, do the following to get the SR
 
 ![Architecture](architecture.svg)
 
-## 1. Grant yourself access to the SRE Agent
+## 1. Confirm the networking posture
+
+The access summary prints whether private networking is on and Grafana's public-access setting. If you deployed **private-only** (`grafanaPublicNetworkAccess = Disabled`), Grafana's UI/API is reachable **only from inside the VNet** — set up Bastion / a jumpbox / VPN before continuing.
+
+> ⚠️ **SRE Agent reachability:** the agent is Microsoft-managed with no VNet injection. If, after connecting the MCP server, the agent cannot reach a private Grafana, redeploy with `GRAFANA_PUBLIC_NETWORK_ACCESS=Enabled` (a private endpoint is still created; the agent uses the public, Entra-protected endpoint).
+
+## 2. Grant yourself access to the SRE Agent
 
 Using the agent requires a data-plane role on the agent — **subscription Owner is not sufficient**. If you didn't pass `agentAccessPrincipalId` at deploy time:
 
@@ -19,15 +25,16 @@ Allow 5–10 minutes for propagation, then sign in to <https://sre.azure.com> wi
 
 > If you see a banner offering to migrate to a newer SRE Agent version, you can accept it — it upgrades the sandbox (code/file access, log-to-code investigation, better memory) without affecting RBAC or this deployment.
 
-## 2. Add your data sources to Grafana
+## 3. Add your data sources to Grafana
 
-The agent only sees what Grafana can query. Open the Grafana URL from the access summary and add your data sources — typically **restored from backup**:
+The agent only sees what Grafana can query. Open Grafana (from inside the VNet if private) and add your data sources — typically **restored from backup**:
 
 1. Grafana → **Connections → Data sources → Add data source**.
 2. Add **Prometheus**, **Loki**, and/or **Tempo** pointing at your restored backends.
-3. Set the appropriate auth for each source and **Save & test**.
+3. If those backends are private, use Grafana **managed private endpoints** to reach them.
+4. Set the appropriate auth for each source and **Save & test**.
 
-## 3. Connect the agent to Grafana (MCP)
+## 4. Connect the agent to Grafana (MCP)
 
 The agent reaches Grafana through its MCP endpoint:
 
@@ -35,9 +42,13 @@ The agent reaches Grafana through its MCP endpoint:
 <AZURE_GRAFANA_ENDPOINT>/api/azure-mcp
 ```
 
-The agent's managed identity already has **Grafana Viewer**, so it can query dashboards and data sources once they are configured.
+Use **Managed identity** auth with the agent's identity (it already has **Grafana Viewer**). The Azure AD token scope for Managed Grafana is:
 
-## 4. Try an investigation
+```
+ce34e7e5-485f-4d76-964f-b3d2b16d1e4f/.default
+```
+
+## 5. Try an investigation
 
 In <https://sre.azure.com>, open your agent and ask it to investigate a service. It will use Grafana (via MCP) to pull metrics/logs/traces from the data sources you added and reason over them.
 
